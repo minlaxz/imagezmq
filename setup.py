@@ -14,7 +14,7 @@ requires = [
 
 # load the "about" fields like name, version, author, etc. from __version__.py
 about = {}
-with open(os.path.join(here, 'imagezmq', '__version__.py'), 'r') as f:
+with open(os.path.join(here, 'imzmqx', '__version__.py'), 'r') as f:
     exec(f.read(), about)
 
 # get PyPI README for uploading to PyPI. It is a shorter README for PyPI
@@ -27,14 +27,14 @@ setup(
     name=about['__title__'],
     version=about['__version__'],
     description=about['__description__'],
-    keywords=['opencv-python', 'pyzmq', 'raspberrypi'],
+    keywords=['opencv-python', 'pyzmq', 'raspberrypi', 'imzmqx'],
     long_description=readme,
     long_description_content_type='text/x-rst',
     author=about['__author__'],
     author_email=about['__author_email__'],
     url=about['__url__'],
-    packages = ['imagezmq'],
-    package_dir={'imagezmq': 'imagezmq'},
+    packages = ['imzmqx'],
+    package_dir={'imzmqx': 'imzmqx'},
     python_requires=">=3.5",
     install_requires=requires,
     license=about['__license__'],
