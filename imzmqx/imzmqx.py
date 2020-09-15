@@ -45,34 +45,31 @@ class ImageSender():
         a matching SUB socket on the ImageHub().
         """
 
-        if REQ_REP == True:
-             # REQ/REP mode, this is a blocking scenario
-             self.init_reqrep(connect_to)
-        else:
-             #PUB/SUB mode, non-blocking scenario
-             self.init_pubsub(connect_to)
+        self.address = connect_to
 
-    def init_reqrep(self, address):
+        # REQ/REP mode, this is a blocking scenario else #PUB/SUB mode
+        self.init_reqrep() if REQ_REP else self.init_pubsub()
+
+
+    def init_reqrep(self):
         """ Creates and inits a socket in REQ/REP mode
         """
 
-        socketType = zmq.REQ
         self.zmq_context = SerializingContext()
-        self.zmq_socket = self.zmq_context.socket(socketType)
-        self.zmq_socket.connect(address)
+        self.zmq_socket = self.zmq_context.socket(socket_type=zmq.REQ)
+        self.zmq_socket.connect(self.address)
 
         # Assign corresponding send methods for REQ/REP mode
         self.send_image = self.send_image_reqrep
         self.send_jpg   = self.send_jpg_reqrep
 
-    def init_pubsub(self, address):
+    def init_pubsub(self):
         """Creates and inits a socket in PUB/SUB mode
         """
 
-        socketType = zmq.PUB
         self.zmq_context = SerializingContext()
-        self.zmq_socket = self.zmq_context.socket(socketType)
-        self.zmq_socket.bind(address)
+        self.zmq_socket = self.zmq_context.socket(zmq.PUB)
+        self.zmq_socket.bind(self.address)
 
         # Assign corresponding send methods for PUB/SUB mode
         self.send_image = self.send_image_pubsub
@@ -235,31 +232,26 @@ class ImageHub():
 
         """
         self.REQ_REP = REQ_REP
-        if REQ_REP ==True:
-            #Init REP socket for blocking mode
-            self.init_reqrep(open_port)
-        else:
-            #Connect to PUB socket for non-blocking mode
-            self.init_pubsub(open_port)
+        self.address = open_port
+        # Init REP socket for blocking mode  `else` Connect to PUB socket for non-blocking mode
+        self.init_reqrep() if self.REQ_REP else self.init_pubsub()
 
-    def init_reqrep(self, address):
+    def init_reqrep(self):
         """ Initializes Hub in REQ/REP mode
         """
-        socketType = zmq.REP
         self.zmq_context = SerializingContext()
-        self.zmq_socket = self.zmq_context.socket(socketType)
-        self.zmq_socket.bind(address)
+        self.zmq_socket = self.zmq_context.socket(socket_type=zmq.REP)
+        self.zmq_socket.bind(self.address)
 
-    def init_pubsub(self, address):
+    def init_pubsub(self):
        """ Initialize Hub in PUB/SUB mode
        """
-       socketType = zmq.SUB
        self.zmq_context = SerializingContext()
-       self.zmq_socket = self.zmq_context.socket(socketType)
+       self.zmq_socket = self.zmq_context.socket(socket_type=zmq.SUB)
        self.zmq_socket.setsockopt(zmq.SUBSCRIBE, b'')
-       self.zmq_socket.connect(address)
+       self.zmq_socket.connect(self.address)
 
-    def connect(self, open_port):
+    def connect(self):
         """In PUB/SUB mode, the hub can connect to multiple senders at the same
         time.
         Use this method to connect (and subscribe) to additional senders.
@@ -271,7 +263,7 @@ class ImageHub():
         if self.REQ_REP == False:
             #This makes sense only in PUB/SUB mode
             self.zmq_socket.setsockopt(zmq.SUBSCRIBE, b'')
-            self.zmq_socket.connect(open_port)
+            self.zmq_socket.connect(self.address)
             self.zmq_socket.subscribe(b'')
         return
 
